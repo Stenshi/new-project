@@ -1,5 +1,5 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, Flex } from 'antd';
+import { Button, Form, Input, Flex } from 'antd';
 import Loginimage from '../../assets/Login.jpg'
 //导入useNavigate
 import { useNavigate } from "react-router-dom";
