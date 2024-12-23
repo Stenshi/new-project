@@ -1,14 +1,14 @@
-
-
-
-function App() {
-  
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+const App: React.FC = () => {
+ 
 
   return (
     <>
-     hello world
+    {/* 引入子路由 */}
+    <Outlet></Outlet>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

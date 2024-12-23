@@ -1,10 +1,16 @@
-import { StrictMode } from 'react'
+
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App.tsx'
+//导入RouterProvider组件
+import { RouterProvider } from 'react-router-dom'
+//导入router路由
+import router from './router'
 
+
+import 'normalize.css'
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  //路由绑定
+  <RouterProvider router={router}>
+    
+  </RouterProvider>
 )
