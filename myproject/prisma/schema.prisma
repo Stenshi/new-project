@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//创建User表
+model User {
+  id        Int      @id @default(autoincrement())  // 用户唯一标识，自增
+  username  String   @unique                      // 用户名，唯一
+  password  String   // 哈希处理的密码
+  email     String   @unique                      // 邮箱，唯一
+  createdAt DateTime @default(now())  // 创建时间，默认当前时间
+}
+
+
+
