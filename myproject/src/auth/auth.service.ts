@@ -7,7 +7,7 @@ import {
   import { PrismaService } from './../prisma/prisma.service';
   import { JwtService } from '@nestjs/jwt';
   import { AuthEntity } from './entities/auth.entity';
-   
+  import * as bcrypt from 'bcryptjs';
   
   @Injectable()
   export class AuthService {
@@ -20,10 +20,10 @@ import {
         if (!user) {
           throw new NotFoundException(`用户名不存在，请注册或重新输入`);
         }
-    
+        
         // 判断密码是否相等
-        const isPasswordValid = user.password === password;
-    
+        //bcrypt.compare：这是 bcrypt 库提供的一个方法，用于比较明文密码（password）和加密后的密码（user.password）。
+        const isPasswordValid = await bcrypt.compare(password, user.password);
         // 如果密码错误
         if (!isPasswordValid) {
           throw new UnauthorizedException('密码错误，请重新输入');

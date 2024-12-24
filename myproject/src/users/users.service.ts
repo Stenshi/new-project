@@ -1,17 +1,26 @@
 import { Injectable} from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-
+import * as bcrypt from 'bcryptjs';  
+import { RegisterDto } from './dto/register.dto';
+export const roundsOfHashing = 10;
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   //注册
-  create(createUserDto: CreateUserDto) {
-    //手动设置日期
-    return this.prisma.user.create({ data:{...createUserDto,createdAt: new Date().toISOString()}});
+  async create(createUserDto: RegisterDto) {
+    //将密码转为哈希
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        //加密十轮
+        roundsOfHashing,
+      )
+      createUserDto.password = hashedPassword;
+    
+    return this.prisma.user.create({ data:createUserDto});
 
   }
  
