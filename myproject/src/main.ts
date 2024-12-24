@@ -6,10 +6,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // 启用全局验证管道
   app.useGlobalPipes(new ValidationPipe());
+
+  //swagger配置
   const config = new DocumentBuilder()
   .setTitle('Median')
   .setDescription('The Median API description')
   .setVersion('0.1')
+  .addBearerAuth()
   .build();
 
   const document = SwaggerModule.createDocument(app, config);

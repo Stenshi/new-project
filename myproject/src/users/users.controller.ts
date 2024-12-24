@@ -1,36 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards, ParseIntPipe} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { LoginDto } from './dto/login.dto';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Authlogin } from './entities/user.entity';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RegisterDto } from './dto/register.dto';
+
 @Controller('users')
-@ApiTags('auth')
+@ApiTags('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   //注册
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @Post('register')
+  create(@Body() createUserDto:RegisterDto ) {
     return this.usersService.create(createUserDto);
   }
-  //登录
-  @Post('login')
-  //这是一个 Swagger 注解，用于生成 API 文档。
-  @ApiOkResponse({ type: Authlogin })
-  login(@Body() { username, password }: LoginDto) {
-    return this.usersService.login(username, password);
-  }
-   
-  
+
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findOne(id)
   }
 
   @Patch(':id')
