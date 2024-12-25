@@ -15,8 +15,10 @@ export class UsersController {
   create(@Body() createUserDto:RegisterDto ) {
     return this.usersService.create(createUserDto);
   }
-
+ 
   @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   findAll() {
     return this.usersService.findAll();
   }
@@ -29,6 +31,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+ 
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }

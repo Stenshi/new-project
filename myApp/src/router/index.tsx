@@ -6,6 +6,8 @@ import Register from "../page/register";
 
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
+import Main from "../page/main";
+import AuthRoute from "../components/AuthRoute";
 // 创建router实例
 const router = createBrowserRouter([
     {
@@ -22,6 +24,10 @@ const router = createBrowserRouter([
             }
         ]  
     },
+    {
+        path: '/main',
+        element: <AuthRoute><Main/></AuthRoute>
+    }
     
 ])
 

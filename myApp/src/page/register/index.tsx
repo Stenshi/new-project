@@ -1,14 +1,34 @@
 import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { Button,  Form, Input, Flex } from "antd";
+import { Button,  Form, Input, Flex, message } from "antd";
 import Loginimage from "../../assets/Login.jpg";
 import { useNavigate } from "react-router-dom";
+import { request } from "../../utils";
+
 //注册页
 const Register = () => {
     const usenavigate = useNavigate()
-    const onfinsh = (value)=>{
-        console.log(value);
-        // 注册成功跳转到Login页
-        usenavigate('/');
+    const onfinsh = async (value)=>{
+        try{
+         const res = await request({
+            url: '/users/register',
+            method: 'POST',
+            data:{
+              username:value.username,
+              password:value.password,
+              email:value.email
+            }
+         })
+         message.success('注册成功')
+         // 注册成功跳转到Login页
+         usenavigate('/');
+        }catch(error){
+          
+          message.error(`${error.response.data.message}`)
+         }
+        
+          
+       
+        
     }
   return (
     <div
@@ -83,7 +103,12 @@ const Register = () => {
         <Form.Item
           name="email"
           rules={[
-            { required: true, message: "Please input your Email!" }
+            { required: true, message: "Please input your Email!" },
+            //必须为email格式
+            { 
+              type: 'email', 
+              message: "请输入正确的email!" 
+            }
            
         ]}
         >

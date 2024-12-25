@@ -1,16 +1,33 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Flex } from 'antd';
+import { Button, Form, Input, Flex, message } from 'antd';
 import Loginimage from '../../assets/Login.jpg'
+
+import { gettoken } from '../../store/modules/Tokenstore';
 //导入useNavigate
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
 //登录页
 const Login = ()=>{
     const usenavigate = useNavigate();
-   
-   
+    const dispatch = useDispatch()
     const register=()=>{
         //跳转到子路由register
         usenavigate('/register');
+    }
+    interface LoginForm {
+      username: string;
+      password: string;
+    }
+    const onFinsh = async (data:LoginForm)=>{
+      try{
+        await dispatch(gettoken(data))
+        message.success('登录成功')
+        // 注册成功跳转到主页
+        usenavigate('/main');
+       }catch(error){
+        console.log(error);
+         message.error(`${error.response.data.message}`)
+        }
     }
     return (
         
@@ -29,16 +46,17 @@ const Login = ()=>{
             name="login"
             initialValues={{ remember: true }}
             style={{ width:'500px',height:'300px',margin:'auto'}}
+            onFinish={onFinsh}
           >
             <Form.Item
               name="username"
-              rules={[{ required: true, message: 'Please input your Username!' }]}
+              rules={[{ required: true, message: '请输入用户名!' }]}
             >
               <Input prefix={<UserOutlined />} placeholder="Username" />
             </Form.Item>
             <Form.Item
               name="password"
-              rules={[{ required: true, message: 'Please input your Password!' }]}
+              rules={[{ required: true, message: '请输入密码!' }]}
             >
               <Input prefix={<LockOutlined />} type="password" placeholder="Password" />
             </Form.Item>
