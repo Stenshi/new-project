@@ -2,22 +2,15 @@ import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 import { Button,  Form, Input, Flex, message } from "antd";
 import Loginimage from "../../assets/Login.jpg";
 import { useNavigate } from "react-router-dom";
-import { request } from "../../utils";
+
+import { registerAPI } from "../../api/register";
 
 //注册页
 const Register = () => {
     const usenavigate = useNavigate()
     const onfinsh = async (value)=>{
         try{
-         const res = await request({
-            url: '/users/register',
-            method: 'POST',
-            data:{
-              username:value.username,
-              password:value.password,
-              email:value.email
-            }
-         })
+         const res = await registerAPI(value)
          message.success('注册成功')
          // 注册成功跳转到Login页
          usenavigate('/');

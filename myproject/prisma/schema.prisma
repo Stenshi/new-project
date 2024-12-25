@@ -20,7 +20,22 @@ model User {
   password  String   // 哈希处理的密码
   email     String   @unique                      // 邮箱，唯一
   createdAt DateTime @default(now())  // 创建时间，默认当前时间
+  products Product[] //反向关系，外键关联
 }
 
+//创建商品表
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    // 商品名称
+  description String?   // 商品描述，允许为空
+  price       Float     // 商品价格
+  stock       Int       // 商品库存量
+  createdAt   DateTime  @default(now()) // 创建时间
+  imageUrl    String?   // 商品图片URL，允许为空
 
+  userId      Int       // 用户ID，外键关联 User 表
+  user        User      @relation(fields: [userId], references: [id])  //外键关联
+
+  @@index([name]) // 创建索引，便于查询
+}
 

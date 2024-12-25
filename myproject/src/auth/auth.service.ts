@@ -31,7 +31,7 @@ import {
         
         // 若登录成功，生成 JWT 并返回
         return {
-          accessToken: this.jwtService.sign({ userId: user.id }),
+          accessToken: this.jwtService.sign({ userId: user.id}),
         };
       }
   }

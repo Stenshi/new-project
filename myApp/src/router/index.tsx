@@ -8,6 +8,8 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Main from "../page/main";
 import AuthRoute from "../components/AuthRoute";
+import Product from "../page/main/childrenpage/product";
+import ProductKind from "../page/main/childrenpage/product_kind";
 // 创建router实例
 const router = createBrowserRouter([
     {
@@ -19,14 +21,24 @@ const router = createBrowserRouter([
                 element: <Login/>
             },
             {
-                path: '/register',
+                path: 'register',
                 element: <Register/>
             }
         ]  
     },
     {
         path: '/main',
-        element: <AuthRoute><Main/></AuthRoute>
+        element: <AuthRoute><Main/></AuthRoute>,
+        children: [
+            {
+                path: 'product',
+                element: <Product/>
+            },
+            {
+                path: 'kind',
+                element: <ProductKind/>
+            }
+        ]  
     }
     
 ])

@@ -7,7 +7,7 @@ export const roundsOfHashing = 10;
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   //注册
   async create(createUserDto: RegisterDto) {

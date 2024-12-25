@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 //导入封装好的axios请求=>request
 import { getToken, loginrequest, setToken } from "../../utils";
+import { loginAPI } from "../../api/login";
 const userToken = createSlice({
     name: 'user',
     initialState:{
@@ -18,12 +19,17 @@ const userToken = createSlice({
     }
 
 })
+interface LoginForm {
+    username: string;
+    password: string;
+  }
 //导出setoken方法
 const {settoken} = userToken.actions;
-const gettoken = (loginForm)=>{
+const gettoken = (loginForm:LoginForm )=>{
     return (
         async (dispatch)=>{
-         const res = await loginrequest.post('/auth/login',loginForm)
+         const res = await loginAPI(loginForm);
+         console.log(res);
          dispatch(settoken(res.data.accessToken))
          
         }
