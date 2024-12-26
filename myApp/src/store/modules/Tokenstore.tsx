@@ -29,7 +29,7 @@ const gettoken = (loginForm:LoginForm )=>{
     return (
         async (dispatch)=>{
          const res = await loginAPI(loginForm);
-         console.log(res);
+         
          dispatch(settoken(res.data.accessToken))
          
         }

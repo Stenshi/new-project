@@ -22,7 +22,7 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:5173',  // 允许的域名访问，如果要指定多个具体域名，可以使用一个数组 ['http://example.com'，'...']
    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // 允许的 HTTP 方法
-   allowedHeaders: 'Content-Type, Authorization',  // 允许的请求头
+   allowedHeaders: ['Content-Type, Authorization','x-requested-with'],  // 允许的请求头
    credentials: true, // 允许携带认证信息，如 cookies
  });
   await app.listen(process.env.PORT ?? 3000);

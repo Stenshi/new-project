@@ -21,11 +21,11 @@ export class CreateProDto {
     @Min(0)
     @ApiProperty()
     stock: number;  // 商品库存量，必填，且不能为负数
-  
+    
+    @IsString()
     @IsOptional()
-    @IsUrl()
     @ApiProperty()
-    imageUrl?: string;  // 商品图片URL，选填，必须是有效的 URL 格式
+    imageUrl?: string;  // 商品图片URL，选填，
   
     @IsInt()
     @Min(1)
