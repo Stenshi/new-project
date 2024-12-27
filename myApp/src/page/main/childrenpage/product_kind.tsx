@@ -11,7 +11,7 @@ const ProductKind = () => {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: '名称', dataIndex: 'name', key: 'name' },
-    { title: '操作', key: 'action', render: (text, record) => (
+    { title: '操作', key: 'action', render: (record) => (
       <>
         <Button onClick={() => handleEditCategory(record)} style={{ marginRight: 8 }}>编辑</Button>
         <Button onClick={() => handleDeleteCategory(record.id)} danger>删除</Button>

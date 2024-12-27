@@ -1,5 +1,5 @@
 import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
-import { Button,  Form, Input, Flex, message } from "antd";
+import { Button,  Form, Input, message } from "antd";
 import Loginimage from "../../assets/Login.jpg";
 import { useNavigate } from "react-router-dom";
 
@@ -10,7 +10,7 @@ const Register = () => {
     const usenavigate = useNavigate()
     const onfinsh = async (value)=>{
         try{
-         const res = await registerAPI(value)
+         await registerAPI(value)
          message.success('注册成功')
          // 注册成功跳转到Login页
          usenavigate('/');
@@ -117,7 +117,5 @@ const Register = () => {
   );
 };
 export default Register;
-function usenavigate(arg0: string) {
-    throw new Error("Function not implemented.");
-}
+
 

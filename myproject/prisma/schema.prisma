@@ -26,7 +26,7 @@ model User {
 //创建商品表
 model Product {
   id          Int       @id @default(autoincrement())
-  name        String    // 商品名称
+  name        String    @unique // 商品名称
   description String?   // 商品描述，允许为空
   price       Float     // 商品价格
   stock       Int       // 商品库存量

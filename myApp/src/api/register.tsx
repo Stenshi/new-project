@@ -1,7 +1,8 @@
 //用户相关的所有请求
+import { RegisterForm } from "../type"
 import { request } from "../utils"
-//1.登录请求
-function registerAPI(value){
+//1.注册请求
+function registerAPI(value:RegisterForm){
     return request({
         url: '/users/register',
         method: 'POST',

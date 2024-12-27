@@ -2,7 +2,7 @@ import { IsString, Min,  IsOptional, IsNumber, IsPositive, IsInt, IsUrl, Length 
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateProDto {
     @IsString()
-    @Length(2, 10)
+    @Length(1, 10)
     @ApiProperty()
     name: string;  // 商品名称，必填，且长度至少为2个字符，最多为10个字符
   

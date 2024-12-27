@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
+
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProDto } from './dto/createProduct.dto';
+
 
 
 
@@ -20,13 +21,24 @@ export class ProductService {
     return  this.prisma.product.findMany();;
   }
   
-  //查询单个商品
-  findOne(id: number) {
-    return this.prisma.product.findUnique({
-      where: { id },  // 按 id 查找
+  //模糊查询商品
+  findMany(name: string) {
+   
+    return this.prisma.product.findMany({
+      where: { name: {
+        contains: name,  // Prisma 的 contains 用于做模糊查询
+        mode: 'insensitive',  // 可选: 忽略大小写
+      },},  // 模糊匹配 name 字段 },  // 按name查找
     });
   }
-  
+  //查询单个商品
+  findOneByName(name: string){
+    return this.prisma.product.findUnique({
+      where: {
+        name: name, // 查找一个商品名为 `name` 的商品
+      },
+    });
+  }
   //更新商品
   update(id: number, updateProductDto: UpdateProductDto) {
     return this.prisma.product.update({

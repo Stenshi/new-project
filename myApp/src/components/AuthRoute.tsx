@@ -1,6 +1,8 @@
 import { getToken } from "../utils";
 import { Navigate } from "react-router-dom";
-const AuthRoute = ({children})=>{
+import { ReactNode } from "react";
+
+const AuthRoute = ({children}:{children:ReactNode})=>{
     const token = getToken()
     if(token){
         // 父子嵌套children属性

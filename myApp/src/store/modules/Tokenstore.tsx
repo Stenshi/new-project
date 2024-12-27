@@ -1,9 +1,14 @@
 //和用户相关的状态管理
-import { createSlice } from "@reduxjs/toolkit";
+import { Action, createSlice, ThunkAction } from "@reduxjs/toolkit";
 
 //导入封装好的axios请求=>request
-import { getToken, loginrequest, setToken } from "../../utils";
+import { getToken, setToken } from "../../utils";
 import { loginAPI } from "../../api/login";
+import { AppDispatch } from "..";
+import { LoginForm } from "../../type";
+
+
+
 const userToken = createSlice({
     name: 'user',
     initialState:{
@@ -19,19 +24,14 @@ const userToken = createSlice({
     }
 
 })
-interface LoginForm {
-    username: string;
-    password: string;
-  }
+
 //导出setoken方法
 const {settoken} = userToken.actions;
 const gettoken = (loginForm:LoginForm )=>{
     return (
-        async (dispatch)=>{
-         const res = await loginAPI(loginForm);
-         
-         dispatch(settoken(res.data.accessToken))
-         
+        async (dispatch:AppDispatch)=>{
+                const res = await loginAPI(loginForm);
+                dispatch(settoken(res.data.accessToken)); // 调用 settoken action
         }
     )   
 

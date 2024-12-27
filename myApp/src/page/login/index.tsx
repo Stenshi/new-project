@@ -6,6 +6,8 @@ import { gettoken } from '../../store/modules/Tokenstore';
 //导入useNavigate
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
+import { LoginForm } from '../../type';
+
 //登录页
 const Login = ()=>{
     const usenavigate = useNavigate();
@@ -14,10 +16,7 @@ const Login = ()=>{
         //跳转到子路由register
         usenavigate('/register');
     }
-    interface LoginForm {
-      username: string;
-      password: string;
-    }
+   
     const onFinsh = async (data:LoginForm)=>{
       try{
         await dispatch(gettoken(data))
