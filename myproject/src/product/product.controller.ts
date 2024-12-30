@@ -10,6 +10,7 @@ import {
   UploadedFile,
   Res,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 
@@ -52,7 +53,7 @@ export class ProductController {
   async findOne(@Query('name') name: string) {
     const products = await this.productService.findOneByName(name);
     let message = '';
-
+    
     if (products) {
       message = '商品名存在';
     }
@@ -72,6 +73,7 @@ export class ProductController {
       storage: multer.diskStorage({
         destination: (req, file, cb) => {
           const uploadPath = path.join(__dirname, 'uploads');
+          console.log('Upload path:', uploadPath); // 打印上传文件夹的路径
           // 检查目录是否存在并创建
           fs.promises
             .access(uploadPath, fs.constants.F_OK)
@@ -96,20 +98,24 @@ export class ProductController {
       }),
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+  uploadFile(@UploadedFile() file: Express.Multer.File,@Req() req:Request, @Res() res: Response) {
     if (!file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    // 返回图片的 URL（假设图片保存到本地的 'uploads' 文件夹）
+    const imageUrl = `http://localhost:3000/uploads/${file.filename}`;
+    console.log(file);
     // 文件上传成功，返回文件信息
     return res.status(200).json({
       message: 'File uploaded successfully!',
       file: file, // 这里会返回文件的详细信息，比如文件名、路径等
+      url: imageUrl
     });
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Patch(':name')
+  update(@Param('name') name: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(name, updateProductDto);
   }
 
   @Delete(':id')

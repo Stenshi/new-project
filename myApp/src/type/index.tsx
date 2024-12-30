@@ -22,5 +22,12 @@ interface ProductForm {
     "userId": number
 }
 
+//商品分类表单
+  interface CategoryForm {
+    "name": "string",
+    "description": string | null;
+    "parentId": number | null;
+  }
 
-export type {LoginForm,RegisterForm,ProductForm}
+
+export type {LoginForm,RegisterForm,ProductForm,CategoryForm}

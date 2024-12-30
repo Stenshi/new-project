@@ -35,7 +35,25 @@ model Product {
 
   userId      Int       // 用户ID，外键关联 User 表
   user        User      @relation(fields: [userId], references: [id])  //外键关联
-
+  
+  categoryId  Int?      // 分类ID，外键关联 Category 表
+  category    Category? @relation(fields: [categoryId], references: [id]) // 外键关联分类表
+  
   @@index([name]) // 创建索引，便于查询
 }
 
+//创建商品分类表
+model Category {
+  id        Int        @id @default(autoincrement()) // 分类ID
+  name      String     @unique                      // 分类名称
+  description String?   // 商品描述，允许为空
+  parentId  Int?       // 父分类ID，允许为空
+  createdAt DateTime   @default(now())               // 创建时间
+
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])  // 父分类（自关联）
+  children  Category[] @relation("CategoryHierarchy")  // 子分类（自关联）
+
+  products  Product[]  // 与商品的关联，一个分类可以有多个商品
+
+  @@index([id])  // 为分类名称创建索引
+}

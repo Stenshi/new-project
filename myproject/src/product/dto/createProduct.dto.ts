@@ -1,5 +1,6 @@
-import { IsString, Min,  IsOptional, IsNumber, IsPositive, IsInt, IsUrl, Length } from "class-validator";
+import { IsString, Min,  IsOptional, IsNumber, IsPositive, IsInt,  Length } from "class-validator";
 import { ApiProperty } from '@nestjs/swagger';
+
 export class CreateProDto {
     @IsString()
     @Length(1, 10)
@@ -22,7 +23,7 @@ export class CreateProDto {
     @ApiProperty()
     stock: number;  // 商品库存量，必填，且不能为负数
     
-    @IsString()
+    
     @IsOptional()
     @ApiProperty()
     imageUrl?: string;  // 商品图片URL，选填，
@@ -31,4 +32,11 @@ export class CreateProDto {
     @Min(1)
     @ApiProperty()
     userId: number;  // 用户ID，必填，假设它是外键关联到 User 表，且必须是正整数
+
+    @IsInt()
+    @IsOptional()
+    @ApiProperty()
+    categoryId?: number;  // 商品所属类目，选填
+
+
 }

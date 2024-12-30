@@ -1,5 +1,5 @@
 //和用户相关的状态管理
-import { Action, createSlice, ThunkAction } from "@reduxjs/toolkit";
+import {  createSlice } from "@reduxjs/toolkit";
 
 //导入封装好的axios请求=>request
 import { getToken, setToken } from "../../utils";
