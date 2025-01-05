@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
 import { CategoryService } from './category.service';
 
 import { Prisma } from '@prisma/client';
@@ -15,6 +15,28 @@ export class CategoryController {
       data: categorylist,
     };
   }
+  
+  @Get('list')
+  async findAll() {
+    const categorylist = await this.categoryService.findAll();
+    return {
+      data: categorylist,
+    };
+  }
+
+
+
+
+
+  //根据分类名称查询
+  @Get(':name')
+  async getCategoriesByName(@Param('name') name: string) {
+      const categorylist=await this.categoryService.getCategoriesByName(name);
+      return {
+        data: categorylist,
+      };
+    }
+
 
   // 获取某个父分类下的所有子分类
   @Get(':parentId')
@@ -28,4 +50,17 @@ export class CategoryController {
   createCategory(@Body() createCategoryDto: Prisma.CategoryCreateInput) {
     return this.categoryService.createCategory(createCategoryDto);
   }
+
+  //更新分类
+  
+  @Patch(':id')
+  update(@Param('id') id:string, @Body() updateCategoryDto: Prisma.CategoryCreateInput) {
+    return this.categoryService.updateCategory(+id, updateCategoryDto)
+  }
+
+  
+  //删除商品
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.categoryService.remove(+id);}
 }

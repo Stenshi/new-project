@@ -33,6 +33,16 @@ function SearchOnlyAPI(name:string){
     })
 }
 
+//根据分类查找商品
+ function SearchCategoryAPI(categoryId: number){
+    return request ({
+        url: '/product/category',
+        method: 'GET',
+        params:{
+            categoryId,
+        }
+    })
+}
 
 //2.商品更新请求
 function ProductUpdateAPI(id: number, data:ProductForm){
@@ -59,4 +69,4 @@ function ProductCreateAPI(data:ProductForm){
         method: 'DELETE',
     })
 }
-export {ProductFormAPI,ProductCreateAPI,ProductUpdateAPI,SearchProductAPI,SearchOnlyAPI,ProductDeleteAPI}
+export {ProductFormAPI,ProductCreateAPI,ProductUpdateAPI,SearchProductAPI,SearchOnlyAPI,ProductDeleteAPI,SearchCategoryAPI}

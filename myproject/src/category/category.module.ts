@@ -3,6 +3,7 @@ import { CategoryService } from './category.service';
 import { CategoryController } from './category.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
+
 @Module({
   controllers: [CategoryController],
   providers: [CategoryService],

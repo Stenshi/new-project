@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProDto } from './dto/createProduct.dto';
+import { Product } from '@prisma/client';
 
 
 
@@ -39,6 +40,17 @@ export class ProductService {
       },
     });
   }
+
+  //根据分类查询商品
+   // 根据分类ID查询商品
+   async findByCategory(categoryId: number): Promise<Product[]> {
+    return this.prisma.product.findMany({
+      where: {
+        categoryId: categoryId,  // 根据传入的分类ID查询商品
+      },
+    });
+  }
+  
   //更新商品
   update(name: string, updateProductDto: UpdateProductDto) {
     return this.prisma.product.update({

@@ -36,7 +36,7 @@ model Product {
   userId      Int       // 用户ID，外键关联 User 表
   user        User      @relation(fields: [userId], references: [id])  //外键关联
   
-  categoryId  Int?      // 分类ID，外键关联 Category 表
+  categoryId  Int     // 分类ID，外键关联 Category 表
   category    Category? @relation(fields: [categoryId], references: [id]) // 外键关联分类表
   
   @@index([name]) // 创建索引，便于查询

@@ -1,46 +1,127 @@
-import { useEffect, useState } from 'react';
-import { Table, Button, Modal, Form, Input, message, Space, Popconfirm, Select } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { CategoryCreateAPI, CategoryListAPI } from '../../../api/Category';
+import { useEffect, useMemo, useState } from "react";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  message,
+  Space,
+  Popconfirm,
+  Col,
+  Row,
+  AutoComplete,
+  Cascader,
+} from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  CategoryAPI,
+  CategoryCreateAPI,
+  CategoryDeleteAPI,
+  CategoryListAPI,
+  CategoryUpdateAPI,
+  SearchcategoryListAPI,
+} from "../../../api/Category";
 
 const CategoryManagement = () => {
-  const [categories, setCategories] = useState([
-    { id: 1, name: '电子产品', description: '手机、电脑等电子产品', parentId: null },
-    { id: 2, name: '家居用品', description: '家具、家电等', parentId: null },
-    { id: 3, name: '手机', description: '智能手机', parentId: 1 },
-    { id: 4, name: '笔记本电脑', description: '高性能笔记本', parentId: 1 },
-  ]);
-  
-  useEffect(()=>{
+  //获取分类列表包含子类
+  const [categories, setCategories] = useState([]);
+  //获取分类列表
+  const [categoriesAll, setCategoriesAll] = useState([]);
+
+  //获取初始的分类列表
+  const [Kindlist, setKindlist] = useState([]);
+
+  useEffect(() => {
     //请求分类列表
     const getCategory = async () => {
-        const res = await CategoryListAPI();
-        setCategories(res.data);
-        console.log(res.data);
-      };
-      getCategory();
-  },[])
+      const res = await CategoryListAPI();
+      const Res = await CategoryAPI();
+      setCategories(res.data);
+      setKindlist(res.data);
+      setCategoriesAll(Res.data);
+    };
+    getCategory();
+  }, []);
+  //usememo对数据进行二次处理
+  //提取所有的name
+  const kindname = useMemo(() => {
+    const extractNames = (categories) => {
+      return categories.reduce((names, category) => {
+        // 提取当前分类的名称
+        names.push(category.name);
+        // 如果有子分类，递归提取子分类的名称
+        if (category.children && category.children.length > 0) {
+          names.push(...extractNames(category.children)); // 递归调用
+        }
+        return names;
+      }, []);
+    };
+    return extractNames(Kindlist);
+  }, [Kindlist]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [form] = Form.useForm();
 
-
-  
+  //父分类选择框
+  const [parentOption, setparentoption] = useState([]);
 
   // 打开添加/编辑分类的 Modal
   const showModal = (category = null) => {
     setEditingCategory(category);
     form.resetFields();
     if (category) {
+      // 转换函数
+      const transformDataToOptions = (data) => {
+        return data
+          .map((item) => {
+            //如果选择的父分类为它本身，则跳过
+            if (item.id === category.id) {
+              return null;
+            }
+            return {
+              value: item.id,
+              label: item.name,
+              children: item.children
+                ? transformDataToOptions(item.children)
+                : [],
+            };
+          })
+          .filter((item) => item !== null); // 过滤掉 null
+      };
+      const parentkind = transformDataToOptions(Kindlist);
+      //设置父类lable选项
+      const selectParent = category.parentId
+        ? categoriesAll.find((c) => c.id === category.parentId)?.name
+        : "无";
+      setparentoption(parentkind);
+
       form.setFieldsValue({
         name: category.name,
         description: category.description,
-        parentId: category.parentId,
+        //传入value和lable
+        parentId: [category.parentId, selectParent],
       });
     } else {
+      // 转换函数
+      const transformDataToOptions = (data) => {
+        return data.map((item) => {
+          return {
+            value: item.id,
+            label: item.name,
+            children: item.children
+              ? transformDataToOptions(item.children)
+              : [],
+          };
+        });
+      };
+      const parentkind = transformDataToOptions(Kindlist);
+      setparentoption(parentkind);
+
       form.setFieldsValue({
-        name: '',
-        description: '',
+        name: "",
+        description: "",
         parentId: null,
       });
     }
@@ -55,49 +136,69 @@ const CategoryManagement = () => {
   // 提交表单，添加或更新分类
   const handleOk = async () => {
     // 验证表单输入值是否符合规则
-    form.validateFields() 
+    form.validateFields();
 
     // 获取整个表单的值
     const values = form.getFieldsValue();
-    
-        if (editingCategory) {
-          // 更新分类
-          const updatedCategories = categories.map((category) =>
-            category.id === editingCategory.id ? { ...category, ...values } : category
-          );
-          setCategories(updatedCategories);
-          message.success('分类更新成功');
-        } else {
-          // 添加分类
-          await CategoryCreateAPI(values)
-          const res = await CategoryListAPI();
-          setCategories(res.data);
-         
-        }
-        setIsModalVisible(false);
+
+    if (editingCategory) {
+      // 更新分类
+      const value = {
+        ...values,
+        parentId: values.parentId
+          ? values.parentId[values.parentId.length - 1]
+          : null,
+      };
+      await CategoryUpdateAPI(editingCategory.id, value);
+      const res = await CategoryListAPI();
+      setCategories(res.data);
+      setKindlist(res.data);
+      message.success("分类更新成功");
+    } else {
+      // 添加分类
+      const value = {
+        ...values,
+        parentId: values.parentId
+          ? values.parentId[values.parentId.length - 1]
+          : null,
+      };
+      await CategoryCreateAPI(value);
+      const res = await CategoryListAPI();
+      setCategories(res.data);
+      setKindlist(res.data);
+      const Res = await CategoryAPI();
+      setCategoriesAll(Res.data);
+      message.success("分类创建成功");
+    }
+    setIsModalVisible(false);
   };
 
   // 删除分类
-  const handleDelete = (id) => {
-    const filteredCategories = categories.filter((category) => category.id !== id);
-    setCategories(filteredCategories);
-    message.success('分类删除成功');
+  const handleDelete = async (id) => {
+    await CategoryDeleteAPI(id);
+    const res = await CategoryListAPI();
+    setCategories(res.data);
+    setKindlist(res.data);
+    message.success("分类删除成功");
   };
 
   // 表格列定义
   const columns = [
-    { title: '分类名称', dataIndex: 'name', key: 'name' },
-    { title: '描述', dataIndex: 'description', key: 'description' },
-    { title: '父分类', dataIndex: 'parentId', key: 'parentId', render: (parentId:number) => parentId ? categories.find(c => c.id === parentId)?.name : '无' },
+    { title: "分类名称", dataIndex: "name", key: "name" },
+    { title: "描述", dataIndex: "description", key: "description" },
     {
-      title: '操作',
-      key: 'action',
+      title: "父分类",
+      dataIndex: "parentId",
+      key: "parentId",
+      render: (parentId: number) =>
+        parentId ? categoriesAll.find((c) => c.id === parentId)?.name : "无",
+    },
+    {
+      title: "操作",
+      key: "action",
       render: (_, record) => (
         <Space>
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-          />
+          <Button icon={<EditOutlined />} onClick={() => showModal(record)} />
           <Popconfirm
             title="确定删除这个分类吗?"
             onConfirm={() => handleDelete(record.id)}
@@ -110,58 +211,159 @@ const CategoryManagement = () => {
       ),
     },
   ];
-  
-   // 渲染树形结构的表格
-   const renderTable = (categories) => {
-    
-    return categories.map(category => {
-        console.log(category.children)
-    return({
-      key: category.id,
-      ...category,
-      children: category.children ? renderTable(category.children) : null,
-    })});
+
+  //子行展开和折叠
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
+  // 扁平化数据，以便表格渲染
+  const flattenData = (data) => {
+    let result = [];
+    data.forEach((item) => {
+      result.push(item);
+      if (item.children && item.children.length > 0) {
+        result = result.concat(flattenData(item.children)); // 递归展平子项
+      }
+    });
+    return result;
+  };
+
+  const flattenedCategories = flattenData(categories);
+  // 获取某一项的子项id列表
+  const getChildrenKeys = (id) => {
+    const getChildIds = (data, parentId) => {
+      return data
+        .filter((item) => item.parentId === parentId)
+        .map((item) => item.id)
+        .reduce((acc, currentId) => {
+          acc.push(currentId);
+          const children = getChildIds(data, currentId); // 递归获取子项
+          acc = acc.concat(children);
+          return acc;
+        }, []);
+    };
+    return getChildIds(flattenedCategories, id);
+  };
+
+  // 处理展开/折叠行
+  const onExpand = (expanded, record) => {
+    let keys;
+    if (expanded) {
+      // 展开时，只加入父项的key，不展开子项
+      keys = [...expandedRowKeys, record.id];
+    } else {
+      // 收回时，移除父项以及所有子项的key
+      keys = expandedRowKeys.filter((key) => key !== record.id);
+      const childrenKeys = getChildrenKeys(record.id);
+      keys = keys.filter((key) => !childrenKeys.includes(key));
+    }
+    setExpandedRowKeys(keys);
+  };
+
+  console.log(categories);
+
+  //搜索分类
+
+  const [Searchoptions, SearchsetOptions] = useState([]);
+
+  //匹配选项
+  function OptionSearch(value: string): void {
+    if (value) {
+      // 根据输入的内容过滤匹配的类别
+      const filteredCategories = kindname.filter((category) =>
+        category.toLowerCase().includes(value.toLowerCase())
+      );
+      // 设置匹配结果
+      SearchsetOptions(
+        filteredCategories.map((category) => ({
+          value: category,
+        }))
+      );
+    } else {
+      // 如果输入为空，清空选项
+      SearchsetOptions([]);
+    }
+  }
+
+  //点击选项
+  function onselect(value: string) {
+    setOpen(false);
+    setSearchValue(value);
+  }
+
+  const [searchValue, setSearchValue] = useState("");
+
+  //输入框内容变化
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOpen(true);
+    const value = e.target.value;
+    setSearchValue(value);
+    if (!value) {
+      setExpandedRowKeys([]); //将所有展开的项折叠
+      setCategories(Kindlist);
+    }
+  };
+
+  //AutoComplete提示内容的显示
+  const [open, setOpen] = useState(false);
+
+  //点击搜索
+  const handleSearch = async () => {
+    setOpen(false);
+    if (searchValue) {
+      setExpandedRowKeys([]); //将所有展开的项折叠
+      const res = await SearchcategoryListAPI(searchValue);
+      setCategories(res.data);
+    }
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h2>商品分类管理</h2>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => showModal()}
-        style={{ marginBottom: 20 }}
-      >
-        添加分类
-      </Button>
+    <div>
+      <Row gutter={16}>
+        {/* 按钮 */}
+        <Col>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => showModal()}
+            style={{ marginBottom: 20 }}
+          >
+            添加分类
+          </Button>
+        </Col>
+
+        {/* 搜索框 */}
+        <Col>
+          {/* 使用AutoCOmplete自动补全,提升用户查询体验 */}
+          <AutoComplete
+            options={Searchoptions}
+            onSearch={OptionSearch}
+            size="large"
+            open={open}
+            onSelect={onselect}
+          >
+            <Input.Search
+              placeholder="搜索商品"
+              value={searchValue}
+              onChange={handleSearchChange}
+              onSearch={handleSearch}
+              enterButton
+              style={{ width: 300, marginBottom: 16 }} // 设置输入框宽度
+            />
+          </AutoComplete>
+        </Col>
+      </Row>
+
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={renderTable(categories)} // 渲染层级结构
-        pagination={false}
+        dataSource={categories} // 渲染层级结构
         expandable={{
-            //expandable 配置：允许在父分类行中点击展开子分类。
-            //expandedRowRender：这是展开行时显示的内容，你已经设置为显示一个嵌套的 Table，显示该行的 children 数据。
-            expandedRowRender: (record) => {
-                // 展开行时，在该行下方显示一个子表格
-              return (
-               
-                <Table
-                  columns={columns}
-                  dataSource={record.children || []} // 渲染子分类 
-                  pagination={false} // 禁用分页
-                  showHeader={false} // 禁用子表格的表头
-                  rowKey="id"
-                />
-               
-              );
-            },
-            // 可选：设置每行展开的默认状态
-            defaultExpandedRowKeys: [],
-          }}
+          expandedRowKeys, // 使用 expandable.expandedRowKeys 代替原来的 expandedRowKeys
+          onExpand, // 展开/折叠事件
+        }}
+        pagination={false}
       />
       <Modal
-        title={editingCategory ? '编辑分类' : '添加分类'}
+        title={editingCategory ? "编辑分类" : "添加分类"}
         open={isModalVisible}
         onCancel={handleCancel}
         onOk={handleOk}
@@ -171,36 +373,28 @@ const CategoryManagement = () => {
           form={form}
           layout="vertical"
           name="categoryForm"
-          initialValues={{ name: '', description: '', parentId: null }}
+          initialValues={{ name: "", description: "", parentId: null }}
         >
           <Form.Item
             label="分类名称"
             name="name"
-            rules={[{ required: true, message: '请输入分类名称' }]}
+            rules={[{ required: true, message: "请输入分类名称" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             label="描述"
             name="description"
-            rules={[{ required: true, message: '请输入分类描述' }]}
+            rules={[{ required: true, message: "请输入分类描述" }]}
           >
             <Input.TextArea />
           </Form.Item>
-          <Form.Item
-            label="父分类(可选)"
-            name="parentId"
-          >
-            <Select
-              placeholder="请选择父分类"
-              allowClear
-            >
-              {categories.filter(c => c.parentId === null).map(category => ( // 仅显示顶级分类作为父分类选择项
-                <Select.Option key={category.id} value={category.id}>
-                  {category.name}
-                </Select.Option>
-              ))}
-            </Select>
+          <Form.Item label="父分类(可选)" name="parentId">
+            <Cascader
+              options={parentOption}
+              changeOnSelect
+              displayRender={(label) => label[label.length - 1]} // 只显示最后选择的分类（子分类）
+            />
           </Form.Item>
         </Form>
       </Modal>

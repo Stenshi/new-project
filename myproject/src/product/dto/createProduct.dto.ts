@@ -36,7 +36,7 @@ export class CreateProDto {
     @IsInt()
     @IsOptional()
     @ApiProperty()
-    categoryId?: number;  // 商品所属类目，选填
+    categoryId: number;  // 商品所属类目,必填
 
 
 }

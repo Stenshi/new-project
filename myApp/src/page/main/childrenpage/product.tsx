@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Table,
   Button,
@@ -11,28 +11,41 @@ import {
   Row,
   Col,
   Popconfirm,
+  Cascader,
 } from "antd";
 import {
   ProductDeleteAPI,
   ProductFormAPI,
   ProductUpdateAPI,
+  SearchCategoryAPI,
   SearchOnlyAPI,
   SearchProductAPI,
 } from "../../../api/Product";
 import { PlusOutlined } from "@ant-design/icons";
 import { ProductCreateAPI } from "../../../api/Product";
+import { CategoryAPI, CategoryListAPI } from "../../../api/Category";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null); //编辑表单列表
+  const [Kindlist, setKindlist] = useState([]); // 所有分类数据
 
+  //获取分类列表，无子结构
+  const [categoriesAll, setCategoriesAll] = useState([]);
   useEffect(() => {
     //请求商品数据
     const getProduct = async () => {
       const res = await ProductFormAPI();
       setProducts(res.data);
+      //获取分类数据，有子结构
+      const kinds = await CategoryListAPI();
+      setKindlist(kinds.data);
+      // 获取所有分类数据，无子结构
+      const AllKind = await CategoryAPI();
+      setCategoriesAll(AllKind.data);
     };
+
     getProduct();
   }, []);
 
@@ -48,6 +61,15 @@ const Product = () => {
         return (
           <img src={text} alt="图片" style={{ width: 100, height: 100 }} />
         );
+      },
+    },
+    {
+      title: "分类",
+      dataIndex: "categoryId",
+      key: "categoryId",
+      render: (text) => {
+        const category = categoriesAll.find((item) => item.id === text); // 查找匹配的分类
+        return category ? category.name : text; // 如果找到匹配的项，则返回名称，否则返回原始值
       },
     },
     { title: "描述", dataIndex: "description", key: "description" },
@@ -73,9 +95,7 @@ const Product = () => {
             okText="是"
             onConfirm={() => handleDeleteProduct(record.id)}
           >
-            <Button  danger>
-              删除
-            </Button>
+            <Button danger>删除</Button>
           </Popconfirm>
         </>
       ),
@@ -92,6 +112,10 @@ const Product = () => {
   const handleEditProduct = (product) => {
     setEditingProduct(product);
     setIsModalVisible(true);
+    //设置分类选项
+    const selectKind = product.categoryId
+      ? categoriesAll.find((c) => c.id === product.categoryId)?.name
+      : "无";
     // 回填封面图片
     if (product.imageUrl) {
       setImageList(product.imageUrl); // 封面list
@@ -107,11 +131,19 @@ const Product = () => {
       setImageList(initialFileList);
       setImageType(1);
       //回填表单信息
-      form.setFieldsValue({ ...product, type: 1 });
+      form.setFieldsValue({
+        ...product,
+        categoryId: [product.categoryId, selectKind],
+        type: 1,
+      });
     } else {
       setImageType(0);
       //回填表单信息
-      form.setFieldsValue({ ...product, type: 0 });
+      form.setFieldsValue({
+        ...product,
+        categoryId: [product.categoryId, selectKind],
+        type: 0,
+      });
     }
   };
 
@@ -125,38 +157,29 @@ const Product = () => {
 
   // 提交表单
   const handleOk = async (values) => {
+    //表单结构
+    const productForm = {
+      name: values.name,
+      description: values.description,
+      price: parseFloat(values.price),
+      stock: parseInt(values.stock),
+      categoryId: parseInt(values.categoryId[values.categoryId.length - 1]),
+      imageUrl: imageType ? imageList[0].url : "", // 图片上传后返回的url
+      userId: 1,
+    };
     if (editingProduct) {
       // 更新商品
-      const productForm = {
-        name: values.name,
-        description: values.description,
-        price: parseFloat(values.price),
-        stock: parseInt(values.stock),
-        imageUrl: imageType ? imageList[0].url : '', // 图片上传后返回的url
-        userId: 1,
-      };
-
       await ProductUpdateAPI(productForm.name, productForm);
       const res = await ProductFormAPI();
       setProducts(res.data);
-      handleCancel()
+      handleCancel();
       message.success("商品更新成功");
     } else {
       // 添加商品
-      const productForm = {
-        name: values.name,
-        description: values.description,
-        price: parseFloat(values.price),
-        stock: parseInt(values.stock),
-        imageUrl: imageList.length > 0 ? imageList[0].url : '',// 图片上传后返回的url
-        userId: 1,
-        categoryId:1
-      };
-
       await ProductCreateAPI(productForm);
       const res = await ProductFormAPI();
       setProducts(res.data);
-      handleCancel()
+      handleCancel();
       message.success("商品添加成功");
     }
     setIsModalVisible(false);
@@ -165,7 +188,7 @@ const Product = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setImageList([]);
-    setImageType(null)  //清空image表和type值恢复到无图
+    setImageType(null); //清空image表和type值恢复到无图
     form.resetFields(); //关闭表单时，清除表单信息
   };
 
@@ -210,16 +233,90 @@ const Product = () => {
 
   //搜索框
   const [searchValue, setSearchValue] = useState("");
+  const [timer, setTimer] = useState<number | null>(null); // 用于存储定时器 ID
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value);
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    // 清除之前的定时器
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    // 设置新的定时器
+    const newTimer = setTimeout(async () => {
+      //当检测到输入框为空时，0.5s后重新请求列表数据并渲染
+      if (!value) {
+        const res = await ProductFormAPI(); // 你的 API 请求
+        setProducts(res.data);
+      }
+    }, 500); // 500ms 后执行
+
+    // 存储新的定时器
+    setTimer(newTimer);
   };
-
+  //点击搜索
   const handleSearch = async () => {
     const res = await SearchProductAPI(searchValue);
+    //重置类别搜索框
+    setSelectedCategory([]);
     setProducts(res.data);
   };
 
+  //分类查询
+  //分类项
+
+  const categories = useMemo(() => {
+    // 转换函数
+    const transformDataToOptions = (data) => {
+      return data.map((item) => {
+        return {
+          value: item.id,
+          label: item.name,
+          children: item.children ? transformDataToOptions(item.children) : [],
+        };
+      });
+    };
+    const parentkind = transformDataToOptions(Kindlist);
+    return parentkind;
+  }, [Kindlist]);
+
+  // 用来保存 Cascader 选择的值
+  const [selectedCategory, setSelectedCategory] = useState([]);
+
+  // Cascader 选择变化时的处理函数
+  const handleCategoryChange = async (value) => {
+    setSelectedCategory(value); // 更新选中的分类
+    // 清除之前的定时器
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    // 设置新的定时器
+    const newTimer = setTimeout(async () => {
+      //当检测到输入框为空时，0.5s后重新请求列表数据并渲染
+      if (!value) {
+        const res = await ProductFormAPI();
+        setProducts(res.data);
+      }
+    }, 500); // 500ms 后执行
+
+    // 存储新的定时器
+    setTimer(newTimer);
+  };
+
+  //点击分类查询按钮
+  const categoriesSearch = async (value: string[]) => {
+    if (value) {
+      const res = await SearchCategoryAPI(parseInt(value[value.length - 1]));
+      setSearchValue("");
+      setProducts(res.data);
+    } else {
+      const res = await ProductFormAPI();
+      setProducts(res.data);
+      setSearchValue("");
+    }
+  };
   //创建一个表单实例
   const [form] = Form.useForm();
 
@@ -247,6 +344,23 @@ const Product = () => {
             enterButton="搜索" // 你可以自定义按钮文字
             style={{ width: 300, marginBottom: 16 }} // 设置输入框宽度
           />
+        </Col>
+
+        <Col>
+          {/* 分类查询 */}
+          {/* Cascader */}
+          <Cascader
+            value={selectedCategory} // 绑定选中的值
+            options={categories}
+            displayRender={(label) => label[label.length - 1]} // 只显示最后选择的分类（子分类）
+            onChange={handleCategoryChange} // 绑定选中变化事件
+          />
+          <Button
+            type="primary"
+            onClick={() => categoriesSearch(selectedCategory)}
+          >
+            分类查询
+          </Button>
         </Col>
       </Row>
       <Table
@@ -307,7 +421,7 @@ const Product = () => {
             <Input />
           </Form.Item>
 
-          <Form.Item label="封面">
+          <Form.Item label="商品图片">
             <Form.Item name="type" noStyle>
               <Radio.Group
                 onChange={onTypeChange}
@@ -341,6 +455,17 @@ const Product = () => {
             rules={[{ required: true, message: "请描述商品" }]}
           >
             <Input type="text" />
+          </Form.Item>
+
+          <Form.Item
+            label="类别"
+            name="categoryId"
+            rules={[{ required: true, message: "请选择商品类别" }]}
+          >
+            <Cascader
+              options={categories}
+              displayRender={(label) => label[label.length - 1]} // 只显示最后选择的分类（子分类）
+            />
           </Form.Item>
 
           <Form.Item

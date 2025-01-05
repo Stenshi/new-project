@@ -65,6 +65,16 @@ export class ProductController {
     };
   }
 
+  //按分类查询商品
+  @Get('category')
+  async categoriesfind(@Query('categoryId') categoryId: string) {
+    const products = await this.productService.findByCategory(+categoryId)
+    return {
+      data: products,
+    };
+  }
+  
+
   //商品图片上传接口
   @Post('upload')
   //处理文件上传的拦截器
@@ -113,11 +123,13 @@ export class ProductController {
     });
   }
 
+  //更新商品
   @Patch(':name')
   update(@Param('name') name: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(name, updateProductDto);
   }
 
+  //删除商品
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
