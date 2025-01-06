@@ -29,9 +29,10 @@ import {
           throw new UnauthorizedException('密码错误，请重新输入');
         }
         
-        // 若登录成功，生成 JWT 并返回
+        // 若登录成功，生成 JWT 并返回,携带userId的JWT
         return {
-          accessToken: this.jwtService.sign({ userId: user.id}),
+          accessToken: this.jwtService.sign({ userId: user.id,username:user.username}),
+          
         };
       }
   }

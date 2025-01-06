@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
 
 import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('category')
 export class CategoryController {
@@ -9,6 +10,7 @@ export class CategoryController {
 
   // 获取所有顶级分类和子分类
   @Get()
+  @UseGuards(JwtAuthGuard)
   async getAllCategories() {
     const categorylist = await this.categoryService.getAllCategories();
     return {
@@ -17,6 +19,7 @@ export class CategoryController {
   }
   
   @Get('list')
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     const categorylist = await this.categoryService.findAll();
     return {

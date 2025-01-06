@@ -2,7 +2,7 @@
 interface LoginForm {
     username: string;
     password: string;
-   
+    captcha: string;
   }
 
 //注册

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { request } from "../../utils";
 
-import { Layout, Menu, Breadcrumb} from "antd";
+import { Layout, Menu, Breadcrumb, Dropdown, Avatar, Button, MenuProps} from "antd";
 import { Link, Outlet, useLocation, useNavigate} from "react-router-dom";
-import { HomeOutlined, AppstoreAddOutlined, BranchesOutlined } from "@ant-design/icons";
+import { HomeOutlined, AppstoreAddOutlined, BranchesOutlined, UserOutlined, PoweroffOutlined } from "@ant-design/icons";
 import classNames from 'classnames'
 import { Content,Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
@@ -11,11 +11,16 @@ import "./main.scss";
 
 const Main = () => {
   const navigate = useNavigate();
+  const [userinfo, setuserinfo] = useState({userid:'',username:''}); // 用户信息
   useEffect(() => {
     request.get("/users");
     navigate('/main')
+    const userid = localStorage.getItem('userid');
+    const username = localStorage.getItem('username');
+    setuserinfo({userid, username});
 
-  }, []);
+  }, [navigate]);
+
     //  获取当前路径
     const location = useLocation();
     // 判断当前路由是否包含子路由（即判断是否是 /main 下的路径）
@@ -24,7 +29,34 @@ const Main = () => {
     function handleSelect(key: string): void {
         setnav(key)
     }
-
+    
+    //退出,清除delete
+    const deleteToken = () => {
+        localStorage.removeItem('userid');
+        localStorage.removeItem('username');
+        localStorage.removeItem('token_key');
+        navigate('/')
+    }
+    
+    //用户登录头像
+    const items: MenuProps['items'] = [
+        {
+            key: '1',
+            label: (
+                <Button type="link" >
+                用户信息
+              </Button>
+            ),
+          },
+        {
+            key: '2',
+            label: (
+                <Button type="link"  icon={<PoweroffOutlined />} danger onClick={()=>deleteToken()}>
+                退出
+              </Button>
+            ),
+          },
+        ];
   return (
     <Layout style={{ minHeight: "100vh" }}>
       {/* 侧边栏 */}
@@ -64,6 +96,19 @@ const Main = () => {
         }}
       >
         <h2 className="header-title" style={{ margin: 0, fontSize: '24px', color: '#333' }}>商品管理系统</h2>
+        {/* 用户头像与下拉菜单 */}
+       {/* 用户头像与下拉菜单 */}
+       <Dropdown  trigger={['click']} menu={{items}} >
+        <div>
+        {/* Avatar头像组件 */}
+            <Avatar
+              size="large"
+              icon={<UserOutlined />}
+              style={{ cursor: 'pointer', marginLeft: '10px',backgroundColor: '#87d068' }}
+            />
+           
+            </div>
+          </Dropdown>
       </Header>
 
       {/* 内容区域 */}
@@ -84,7 +129,7 @@ const Main = () => {
         {/* 内容 */}
         {<Outlet></Outlet>}
         {!isChildRoute &&(<div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-          <h3>欢迎使用管理系统！</h3>
+          <h3>欢迎用户{userinfo.username}使用管理系统！</h3>
           <p>在这里，你可以管理系统的各项功能。</p>
         </div>)}
       </Content>

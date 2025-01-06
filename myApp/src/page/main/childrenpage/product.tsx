@@ -12,6 +12,7 @@ import {
   Col,
   Popconfirm,
   Cascader,
+  Pagination,
 } from "antd";
 import {
   ProductDeleteAPI,
@@ -31,6 +32,9 @@ const Product = () => {
   const [editingProduct, setEditingProduct] = useState(null); //编辑表单列表
   const [Kindlist, setKindlist] = useState([]); // 所有分类数据
 
+  const [currentPage, setCurrentPage] = useState(1); // 当前页
+  const [pageSize, setPageSize] = useState(5); // 每页显示的数据条数
+
   //获取分类列表，无子结构
   const [categoriesAll, setCategoriesAll] = useState([]);
   useEffect(() => {
@@ -48,6 +52,17 @@ const Product = () => {
 
     getProduct();
   }, []);
+
+  // 计算当前页的数据
+  const currentData = useMemo(() => {
+    return products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [currentPage, products, pageSize]);
+
+  // 分页器页码改变回调
+  const onPageChange = (page, pageSize) => {
+    setCurrentPage(page); // 更新当前页
+    setPageSize(pageSize); // 更新每页条数
+  };
 
   // 表格列配置
   const columns = [
@@ -127,7 +142,6 @@ const Product = () => {
           url: product.imageUrl, // 服务器返回的图片 URL
         },
       ];
-
       setImageList(initialFileList);
       setImageType(1);
       //回填表单信息
@@ -157,19 +171,20 @@ const Product = () => {
 
   // 提交表单
   const handleOk = async (values) => {
+    console.log(values)
     //表单结构
     const productForm = {
       name: values.name,
       description: values.description,
       price: parseFloat(values.price),
       stock: parseInt(values.stock),
-      categoryId: parseInt(values.categoryId[values.categoryId.length - 1]),
+      categoryId: parseInt(values.categoryId[values.categoryId.length-1])?parseInt(values.categoryId[values.categoryId.length-1]):parseInt(values.categoryId[0]),
       imageUrl: imageType ? imageList[0].url : "", // 图片上传后返回的url
-      userId: 1,
+      userId: parseInt(localStorage.getItem('userid')),
     };
     if (editingProduct) {
       // 更新商品
-      await ProductUpdateAPI(productForm.name, productForm);
+      await ProductUpdateAPI(values.id, productForm);
       const res = await ProductFormAPI();
       setProducts(res.data);
       handleCancel();
@@ -261,6 +276,7 @@ const Product = () => {
     //重置类别搜索框
     setSelectedCategory([]);
     setProducts(res.data);
+    setCurrentPage(1);
   };
 
   //分类查询
@@ -311,12 +327,14 @@ const Product = () => {
       const res = await SearchCategoryAPI(parseInt(value[value.length - 1]));
       setSearchValue("");
       setProducts(res.data);
+      setCurrentPage(1);
     } else {
       const res = await ProductFormAPI();
       setProducts(res.data);
       setSearchValue("");
     }
   };
+
   //创建一个表单实例
   const [form] = Form.useForm();
 
@@ -364,10 +382,19 @@ const Product = () => {
         </Col>
       </Row>
       <Table
-        dataSource={products} //导入商品数据
+        dataSource={currentData} //导入商品数据
         columns={columns} //导入列表
         rowKey="id"
-        pagination={false}
+        pagination={false} //关闭默认分类
+      />
+
+      {/* 分页器 */}
+      <Pagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={products.length} //总条数
+        onChange={onPageChange}
+        showTotal={(total) => `总共 ${total} 条`}
       />
 
       {/* 编辑/添加商品模态框 */}
@@ -382,6 +409,10 @@ const Product = () => {
           form={form}
           onFinish={handleOk}
         >
+          {/* 隐藏 id */}
+          <Form.Item name="id" style={{ display: "none" }}>
+            <Input />
+          </Form.Item>
           <Form.Item
             name="name"
             label="名称"

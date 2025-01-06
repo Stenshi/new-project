@@ -11,6 +11,7 @@ import {
   Res,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 
@@ -22,17 +23,20 @@ import * as multer from 'multer';
 import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createProductDto: CreateProDto) {
     return this.productService.create(createProductDto);
   }
 
   //查询所有商品
   @Get()
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     const products = await this.productService.findAll();
     return {
@@ -74,7 +78,6 @@ export class ProductController {
     };
   }
   
-
   //商品图片上传接口
   @Post('upload')
   //处理文件上传的拦截器
@@ -114,7 +117,7 @@ export class ProductController {
     }
     // 返回图片的 URL（假设图片保存到本地的 'uploads' 文件夹）
     const imageUrl = `http://localhost:3000/uploads/${file.filename}`;
-    console.log(file);
+    
     // 文件上传成功，返回文件信息
     return res.status(200).json({
       message: 'File uploaded successfully!',
@@ -124,9 +127,9 @@ export class ProductController {
   }
 
   //更新商品
-  @Patch(':name')
-  update(@Param('name') name: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(name, updateProductDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(+id, updateProductDto);
   }
 
   //删除商品

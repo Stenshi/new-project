@@ -52,9 +52,9 @@ export class ProductService {
   }
   
   //更新商品
-  update(name: string, updateProductDto: UpdateProductDto) {
+  update(id: number, updateProductDto: UpdateProductDto) {
     return this.prisma.product.update({
-      where: { name },  // 查找要更新的商品，条件是 id
+      where: { id },  // 查找要更新的商品，条件是 id
       data: updateProductDto,  // 更新数据，使用 UpdateProductDto 中的数据
     });
   }

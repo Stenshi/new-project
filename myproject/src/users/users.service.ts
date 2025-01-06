@@ -13,7 +13,6 @@ export class UsersService {
   async create(createUserDto: RegisterDto) {
     const user = await this.finduser(createUserDto.username)
     const email = await this.findemail(createUserDto.email)
-    console.log(user)
     if(user){
       throw new HttpException(
         { message: '用户名已经存在' },

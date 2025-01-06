@@ -69,7 +69,7 @@ const CategoryManagement = () => {
 
   // 打开添加/编辑分类的 Modal
   const showModal = (category = null) => {
-    setEditingCategory(category);
+    setEditingCategory(category);    
     form.resetFields();
     if (category) {
       // 转换函数
@@ -142,12 +142,12 @@ const CategoryManagement = () => {
     const values = form.getFieldsValue();
 
     if (editingCategory) {
+       
       // 更新分类
       const value = {
         ...values,
-        parentId: values.parentId
-          ? values.parentId[values.parentId.length - 1]
-          : null,
+        parentId:  values.parentId[values.parentId.length - 1]!=='无'? values.parentId[values.parentId.length - 1]: values.parentId[0]
+        
       };
       await CategoryUpdateAPI(editingCategory.id, value);
       const res = await CategoryListAPI();

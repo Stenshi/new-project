@@ -1,9 +1,7 @@
 //用户相关的所有请求
+import { LoginForm } from "../type"
 import { loginrequest  } from "../utils"
-interface LoginForm {
-    username: string;
-    password: string;
-  }
+
 //1.登录请求
 function loginAPI(formData:LoginForm ){
     return loginrequest ({
@@ -13,4 +11,6 @@ function loginAPI(formData:LoginForm ){
         data: formData
     })
 }
+
+
 export {loginAPI}

@@ -112,8 +112,8 @@ export class CategoryService {
   //更新分类
   updateCategory(id:number, data: Prisma.CategoryCreateInput) {
     return this.prisma.category.update({
-      where: { id },  // 查找要更新的商品，条件是 id
-      data: data,  // 更新数据，使用 UpdateProductDto 中的数据
+      where: { id },  // 查找要更新的商品分类，条件是 id
+      data: data,  // 更新的数据
     });
   }
 
