@@ -248,7 +248,7 @@ const Product = () => {
 
   //搜索框
   const [searchValue, setSearchValue] = useState("");
-  const [timer, setTimer] = useState<number | null>(null); // 用于存储定时器 ID
+  const [timer, setTimer] = useState<NodeJS.Timeout| null>(null); // 用于存储定时器 ID
 
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -301,13 +301,15 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState([]);
 
   // Cascader 选择变化时的处理函数
+   // 声明 state 类型为 NodeJS.Timeout
+   
   const handleCategoryChange = async (value) => {
     setSelectedCategory(value); // 更新选中的分类
     // 清除之前的定时器
     if (timer) {
       clearTimeout(timer);
     }
-
+    
     // 设置新的定时器
     const newTimer = setTimeout(async () => {
       //当检测到输入框为空时，0.5s后重新请求列表数据并渲染
@@ -370,6 +372,7 @@ const Product = () => {
           <Cascader
             value={selectedCategory} // 绑定选中的值
             options={categories}
+            changeOnSelect
             displayRender={(label) => label[label.length - 1]} // 只显示最后选择的分类（子分类）
             onChange={handleCategoryChange} // 绑定选中变化事件
           />
@@ -495,6 +498,7 @@ const Product = () => {
           >
             <Cascader
               options={categories}
+              changeOnSelect
               displayRender={(label) => label[label.length - 1]} // 只显示最后选择的分类（子分类）
             />
           </Form.Item>

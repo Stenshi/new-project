@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma, PrismaClient } from '@prisma/client';
+
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -101,59 +103,64 @@ export class CategoryService {
     });
   }
 
+  // category.service.ts
+async findByName(name: string) {
+  return this.prisma.category.findUnique({ where: { name } });
+}
+  
+
   // 添加新分类
   //Prisma.CategoryCreateInput一个自动生成的类型，用于描述在数据库中创建 Category（分类）记录时所需要的字段结构
-  async createCategory(data: Prisma.CategoryCreateInput) {
+  async createCategory(data: CreateCategoryDto) {
     return this.prisma.category.create({
       data,
     });
   }
 
   //更新分类
-  updateCategory(id:number, data: Prisma.CategoryCreateInput) {
+  updateCategory(id:number, data: UpdateCategoryDto ) {
     return this.prisma.category.update({
       where: { id },  // 查找要更新的商品分类，条件是 id
       data: data,  // 更新的数据
     });
   }
 
-  // 删除商品分类和它的子分类
-  // 删除商品分类和它的子分类
-async remove(id: number) {
-  try {
-    const deletedCategory = await this.prisma.$transaction(async (prisma) => {
-      // Step 1: 查找所有子分类
-      const childCategories = await prisma.category.findMany({
-        where: { parentId: id },
-      });
-
-      console.log(`Found ${childCategories.length} child categories for parent ID ${id}`);
-
-      // Step 2: 删除所有子分类
-      const deleteChildCategoriesPromises = childCategories.map(child =>
-        prisma.category.delete({ where: { id: child.id } })
-      );
-
-      await Promise.all(deleteChildCategoriesPromises);
-      console.log(`Successfully deleted ${childCategories.length} child categories.`);
-
-      // Step 3: 删除目标分类
-      const deletedCategory = await prisma.category.delete({
-        where: { id },
-      });
-
-      console.log(`Successfully deleted category with ID ${id}`);
-      
-      // 返回删除的目标分类
-      return deletedCategory;
-    });
-
-    return deletedCategory;
-  } catch (error) {
-    console.error("Error deleting category or its children:", error);
-    throw new Error('Failed to delete category and its children');
-  }
-}
-
+  // 删除商品分类
   
+  async remove(id: number) {
+    
+      // 使用 Prisma 事务来保证操作的一致性
+      const deletedCategory = await this.prisma.$transaction(async (prisma) => {
+        // Step 1: 查找所有子分类
+        const childCategories = await prisma.category.findMany({
+          where: { parentId: id },
+        });
+  
+        // 如果存在子分类，则不能删除
+        if (childCategories.length > 0) {
+          return { success: 'false', message: `删除失败，存在子分类，无法删除` };
+        }
+  
+        // Step 2: 检查是否有商品绑定到该分类
+        const products = await prisma.product.findMany({
+          where: { categoryId: id },
+        });
+  
+        // 如果有商品绑定，则不能删除
+        if (products.length > 0) {
+          return { success: "false1", message: `删除失败，存在商品与该分类关联` };
+        }
+  
+        // Step 3: 删除目标分类
+        await prisma.category.delete({
+          where: { id },
+        });
+  
+        // 返回删除成功的结果
+        return { success: 'true', message: `分类删除成功` };
+      });
+  
+      return deletedCategory;
+    }
 }
+

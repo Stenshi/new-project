@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { LoginForm } from "../../type";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { request } from "../../utils";
 //import {jwtDecode} from 'jwt-decode';
 
 //登录页
@@ -69,12 +70,10 @@ const Login = () => {
   };
 
   useEffect(() => {
+    request.get("/users");
     fetchCaptcha()
-    // 若存在token，跳转到主页
-    if (localStorage.getItem("token_key")) {
-      usenavigate("/main");
-    }
-  }, [usenavigate]);
+    
+  }, []);
 //点击图片更新验证码
   const updatecaptcha = async()=>{
     const response = await axios.get('http://localhost:3000/auth/code');
@@ -120,23 +119,47 @@ const Login = () => {
         <Form.Item
          name="captcha"
          rules={[{ required: true, message: "请输入验证码!" }]}>
-          <Flex justify="space-between" align="center">
-            <Form.Item name="captcha" valuePropName="checked" noStyle>
-            <img src={`data:image/svg+xml;base64,${btoa(captchaImage)}`} alt="验证码" onClick={updatecaptcha} />
+          <Flex justify="space-between" align="center" style={{ width: '100%' }}>
+          {/* 验证码图片和输入框在左边 */}
+          <Flex align="center" style={{ gap: '1px', flexGrow: 1 }}>
+            <img
+              src={`data:image/svg+xml;base64,${btoa(captchaImage)}`}
+              alt="验证码"
+              onClick={updatecaptcha}
+              
+            />
             <Input
-            type="captcha"
-            placeholder="验证码"
-          />
-          
-              {/*编程式跳转 */}
-              <Button onClick={() => register()}>注册</Button>
-            </Form.Item>
+              type="text"
+              placeholder="请输入验证码"
+              style={{
+                width: '120px',
+                height: '36px',
+                fontSize: '14px',
+                borderRadius: '4px',
+                borderColor: '#d9d9d9',
+              }}
+            />
           </Flex>
+
+          {/* 按钮在右边 */}
+          <Button
+            type="primary"
+            onClick={() => register()}
+            style={{
+              width: '100px',
+              height: '36px',
+              fontSize: '14px',
+              marginLeft: '10px',
+            }}
+          >
+            注册
+          </Button>
+        </Flex>
         </Form.Item>
 
         <Form.Item>
           <Button block type="primary" htmlType="submit">
-            Log in
+            登 录
           </Button>
         </Form.Item>
       </Form>

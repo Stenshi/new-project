@@ -25,7 +25,9 @@ export class CreateProDto {
     
     
     @IsOptional()
-    @ApiProperty()
+    @ApiProperty({
+        required: false,  //可选
+    })
     imageUrl?: string;  // 商品图片URL，选填，
   
     @IsInt()

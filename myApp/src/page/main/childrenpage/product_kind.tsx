@@ -19,6 +19,7 @@ import {
   CategoryCreateAPI,
   CategoryDeleteAPI,
   CategoryListAPI,
+  CategorySingleAPI,
   CategoryUpdateAPI,
   SearchcategoryListAPI,
 } from "../../../api/Category";
@@ -69,7 +70,7 @@ const CategoryManagement = () => {
 
   // 打开添加/编辑分类的 Modal
   const showModal = (category = null) => {
-    setEditingCategory(category);    
+    setEditingCategory(category);
     form.resetFields();
     if (category) {
       // 转换函数
@@ -142,12 +143,13 @@ const CategoryManagement = () => {
     const values = form.getFieldsValue();
 
     if (editingCategory) {
-       
       // 更新分类
       const value = {
         ...values,
-        parentId:  values.parentId[values.parentId.length - 1]!=='无'? values.parentId[values.parentId.length - 1]: values.parentId[0]
-        
+        parentId:
+          values.parentId[values.parentId.length - 1] !== "无"
+            ? values.parentId[values.parentId.length - 1]
+            : values.parentId[0],
       };
       await CategoryUpdateAPI(editingCategory.id, value);
       const res = await CategoryListAPI();
@@ -175,11 +177,21 @@ const CategoryManagement = () => {
 
   // 删除分类
   const handleDelete = async (id) => {
-    await CategoryDeleteAPI(id);
-    const res = await CategoryListAPI();
-    setCategories(res.data);
-    setKindlist(res.data);
-    message.success("分类删除成功");
+      const value = await CategoryDeleteAPI(id);
+      if(value.data.success==='true'){
+        const res = await CategoryListAPI();
+        setCategories(res.data);
+        setKindlist(res.data);
+        message.success("分类删除成功");
+      }else{
+        if(value.data.success==='false'){
+            message.error(value.data.message);
+        }else{
+            message.error(value.data.message);
+        }
+      }
+      
+    
   };
 
   // 表格列定义
@@ -378,7 +390,39 @@ const CategoryManagement = () => {
           <Form.Item
             label="分类名称"
             name="name"
-            rules={[{ required: true, message: "请输入分类名称" }]}
+            rules={[
+                { required: true, message: "请输入商品类别" },
+                editingCategory
+                  ? {
+                      required: true,
+                      message: "该类别已存在,不能重复添加",
+                      //自定义验证器,每当输入值发生变化时触发
+                      validator: async (_, value) => {
+                        // 这里执行异步检查商品名是否存在的逻辑
+                        const isNameExist = await CategorySingleAPI(value);
+                        if (
+                          isNameExist.data.message !== "" &&
+                          value !== editingCategory.name
+                        ) {
+                          return Promise.reject("该类别已存在");
+                        }
+                      },
+                    }
+                  : {
+                      required: true,
+                      message: "该类别已存在,不能重复添加",
+                      //自定义验证器
+                      validator: async (_, value) => {
+                        // 这里执行异步检查商品名是否存在的逻辑
+                        const isNameExist = await CategorySingleAPI(value);
+                        
+                        console.log(isNameExist)
+                        if (isNameExist.data.message !== "") {
+                          return Promise.reject("该类别已存在");
+                        }
+                      },
+                    },
+              ]}
           >
             <Input />
           </Form.Item>

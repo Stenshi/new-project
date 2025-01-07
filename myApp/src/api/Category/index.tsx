@@ -23,12 +23,25 @@ function CategoryListAPI(){
 
 //按分类名查询分类
 function SearchcategoryListAPI(name:string){
-    console.log(name)
     return request({
         url: `/category/${name}`,
         method: 'GET',
     })
 }
+
+// 按分类名查询单个分类
+
+function CategorySingleAPI(name: string) {
+    console.log('Sending request with name:', name);
+    return request({
+      url: '/category/findByName',
+      method: 'GET',
+      params: {
+        name,
+      },
+    })
+  }
+
 
 //新增分类
 function CategoryCreateAPI(data: CategoryForm){
@@ -56,4 +69,4 @@ function CategoryDeleteAPI(id: number){
         method: 'DELETE',
     })
 }
-export { CategoryCreateAPI,CategoryListAPI,SearchcategoryListAPI,CategoryUpdateAPI,CategoryAPI,CategoryDeleteAPI} 
+export { CategoryCreateAPI,CategoryListAPI,SearchcategoryListAPI,CategoryUpdateAPI,CategoryAPI,CategoryDeleteAPI,CategorySingleAPI} 

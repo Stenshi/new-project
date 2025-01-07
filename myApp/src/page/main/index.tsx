@@ -12,11 +12,14 @@ import "./main.scss";
 const Main = () => {
   const navigate = useNavigate();
   const [userinfo, setuserinfo] = useState({userid:'',username:''}); // 用户信息
+
   useEffect(() => {
-    request.get("/users");
+    
     navigate('/main')
     const userid = localStorage.getItem('userid');
     const username = localStorage.getItem('username');
+    request.get(`/users/${userid}`);
+    
     setuserinfo({userid, username});
 
   }, [navigate]);
