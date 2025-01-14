@@ -12,7 +12,7 @@ import { join } from 'path';
   imports: [PrismaModule,
      // 配置 ServeStaticModule,公开文件夹，让浏览器可以访问。
      ServeStaticModule.forRoot({
-      rootPath: join(__dirname, 'uploads'), // 指定公开的文件夹路径
+      rootPath: join(process.cwd(), 'uploads'), // 指定公开的文件夹路径
       serveRoot: '/uploads', // 通过 /uploads 路径访问静态文件
     }),
   ],

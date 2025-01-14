@@ -141,13 +141,13 @@ const CategoryManagement = () => {
 
     // 获取整个表单的值
     const values = form.getFieldsValue();
-
+    
     if (editingCategory) {
       // 更新分类
       const value = {
         ...values,
         parentId:
-          values.parentId[values.parentId.length - 1] !== "无"
+        typeof(values.parentId[values.parentId.length - 1])  === 'number'
             ? values.parentId[values.parentId.length - 1]
             : values.parentId[0],
       };

@@ -36,6 +36,7 @@ const Login = () => {
     }
   };
  
+
   const onFinsh =  async (data: LoginForm) => {
     try {
       //验证码验证
@@ -46,19 +47,7 @@ const Login = () => {
 
       //获取token
       await dispatch(gettoken(data));
-      const token = localStorage.getItem("token_key");
-      
-      // JWT 的格式是 'header.payload.signature'
-      
-      const base64Url = token.split(".")[1];  // 类型断言为 string// 获取中间的 payload 部分
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/"); // 替换 URL 安全字符
-
-      // 解码 Base64,拿到token携带的用户信息
-      const decodedPayload = JSON.parse(atob(base64));
      
-      //将用户信息存储到localStore中
-      localStorage.setItem('userid',decodedPayload.userId);
-      localStorage.setItem('username',decodedPayload.username);
 
       message.success("登录成功");
       // 登录成功跳转到主页
@@ -94,6 +83,7 @@ const Login = () => {
         backgroundSize: "cover",
       }}
     >
+      
       <Form
         name="login"
         initialValues={{ remember: true }}

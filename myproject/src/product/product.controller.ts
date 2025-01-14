@@ -230,8 +230,8 @@ export class ProductController {
     FileInterceptor('image', {
       storage: multer.diskStorage({
         destination: (req, file, cb) => {
-          const uploadPath = path.join(__dirname, 'uploads');
-          console.log('Upload path:', uploadPath); // 打印上传文件夹的路径
+          const uploadPath = path.join(process.cwd(),'uploads');
+          
           // 检查目录是否存在并创建
           fs.promises
             .access(uploadPath, fs.constants.F_OK)

@@ -2,42 +2,48 @@ import { useEffect, useState } from "react";
 import { request } from "../../utils";
 
 import { Layout, Menu, Breadcrumb, Dropdown, Avatar, Button, MenuProps} from "antd";
-import { Link, Outlet, useLocation, useNavigate} from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { HomeOutlined, AppstoreAddOutlined, BranchesOutlined, UserOutlined, PoweroffOutlined } from "@ant-design/icons";
 import classNames from 'classnames'
 import { Content,Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import "./main.scss";
+import { useSelector } from "react-redux";
 
 const Main = () => {
-  const navigate = useNavigate();
-  const [userinfo, setuserinfo] = useState({userid:'',username:''}); // 用户信息
+  const navigate = useNavigate()
+ 
 
+  //  获取当前路径
+  const location = useLocation();
+  // 判断当前路由是否包含子路由（即判断是否是 /main 下的路径）
+  const isChildRoute = location.pathname !== '/main';
+  const [nav,setnav] = useState('首页')
+  function handleSelect(key: string): void {
+      setnav(key)
+  }
+//获取token
+const {token} = useSelector((state: { counter: { token: string } }) => state.counter)
+// JWT 的格式是 'header.payload.signature'
+     
+const base64Url = token.split(".")[1];  // 类型断言为 string// 获取中间的 payload 部分
+const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/"); // 替换 URL 安全字符
+
+// 解码 Base64,拿到token携带的用户信息
+const decodedPayload = JSON.parse(atob(base64));
+localStorage.setItem('userid', decodedPayload.userId)
   useEffect(() => {
-    
-    navigate('/main')
-    const userid = localStorage.getItem('userid');
-    const username = localStorage.getItem('username');
-    request.get(`/users/${userid}`);
-    
-    setuserinfo({userid, username});
+    request.get(`/users/${decodedPayload.userId}`);
+  }, [decodedPayload]);
 
-  }, [navigate]);
+    
 
-    //  获取当前路径
-    const location = useLocation();
-    // 判断当前路由是否包含子路由（即判断是否是 /main 下的路径）
-    const isChildRoute = location.pathname !== '/main';
-    const [nav,setnav] = useState('首页')
-    function handleSelect(key: string): void {
-        setnav(key)
-    }
+ 
     
     //退出,清除delete
     const deleteToken = () => {
-        localStorage.removeItem('userid');
-        localStorage.removeItem('username');
         localStorage.removeItem('token_key');
+        localStorage.removeItem('userid');
         navigate('/')
     }
     
@@ -125,6 +131,7 @@ const Main = () => {
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
         }}
       >
+       
         <Breadcrumb style={{ margin: '16px 0' }}>
           <Breadcrumb.Item ><Link to="/main" onClick={()=>setnav('首页') } className={classNames({highlighted:nav==='首页'})}>首页</Link></Breadcrumb.Item>
           <Breadcrumb.Item>{nav==='首页' ? '':nav}</Breadcrumb.Item>
@@ -132,7 +139,7 @@ const Main = () => {
         {/* 内容 */}
         {<Outlet></Outlet>}
         {!isChildRoute &&(<div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-          <h3>欢迎用户{userinfo.username}使用管理系统！</h3>
+          <h3>欢迎用户{decodedPayload.username}使用管理系统！</h3>
           <p>在这里，你可以管理系统的各项功能。</p>
         </div>)}
       </Content>

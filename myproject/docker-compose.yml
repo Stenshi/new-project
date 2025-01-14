@@ -1,18 +1,50 @@
-# docker-compose.yml
 
-version: '3.8'
 services:
-
-  postgres:
-    image: postgres:13.5
+  nestjs:
+    container_name: nestjs-app
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:123456@postgres:5432/db
+    depends_on:
+      - postgres
+    command: >
+      bash -c "
+        # 等待数据库启动并准备好
+        until pg_isready -h postgres -U postgres -d db; do
+          echo 'Waiting for PostgreSQL...';
+          sleep 2;
+        done;
+        # 运行 Prisma 数据库迁移
+        npx prisma migrate deploy;
+        # 启动 NestJS 应用
+        npm run start:dev
+      "
+    networks:
+      - app-network
+   
+  #postgres就是服务的名称
+  postgres:     
+    image: postgres:latest
     restart: always
     environment:
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=db # 设置自定义的数据库名称
     volumes:
       - postgres:/var/lib/postgresql/data
     ports:
       - '5432:5432'
+    networks:
+      - app-network
 
 volumes:
   postgres:
+
+networks:
+  app-network:
+    driver: bridge
