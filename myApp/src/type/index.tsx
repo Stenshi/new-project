@@ -29,5 +29,13 @@ interface ProductForm {
     "parentId": number | null;
   }
 
+//log表单类型
+interface log {
+    "action": "string",
+    "description": "string",
+    "time": "string",
+    "details": "string",
+} 
 
-export type {LoginForm,RegisterForm,ProductForm,CategoryForm}
+
+export type {LoginForm,RegisterForm,ProductForm,CategoryForm,log}
