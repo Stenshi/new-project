@@ -22,6 +22,7 @@ model User {
   email     String   @unique                      // 邮箱，唯一
   createdAt DateTime @default(now())  // 创建时间，默认当前时间
   products Product[] //反向关系，外键关联
+  operations  OperationLog[]  // 反向关系，外键关联 OperationLog 表
 }
 
 //创建商品表
@@ -58,4 +59,14 @@ model Category {
 
   @@index([id])  // 为分类名称创建索引
 }
+
+model OperationLog {
+  id          Int      @id @default(autoincrement()) // 日志 ID
+  userId      Int      // 用户 ID
+  actionType  String   // 操作类型（如：创建、删除、更新）
+  description String   // 操作描述
+  createdAt   DateTime @default(now()) // 操作时间
+  user        User      @relation(fields: [userId], references: [id])  //外键关联
+}
+
 
