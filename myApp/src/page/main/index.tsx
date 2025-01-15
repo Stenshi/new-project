@@ -3,7 +3,7 @@ import { request } from "../../utils";
 
 import { Layout, Menu, Breadcrumb, Dropdown, Avatar, Button, MenuProps} from "antd";
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { HomeOutlined, AppstoreAddOutlined, BranchesOutlined, UserOutlined, PoweroffOutlined } from "@ant-design/icons";
+import { HomeOutlined, AppstoreAddOutlined, BranchesOutlined, UserOutlined, PoweroffOutlined, FileTextOutlined } from "@ant-design/icons";
 import classNames from 'classnames'
 import { Content,Header } from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
@@ -87,6 +87,9 @@ localStorage.setItem('userid', decodedPayload.userId)
           </Menu.Item>
           <Menu.Item key="分类管理" icon={<BranchesOutlined />}>
             <Link to="kind" onClick={()=>setnav('分类管理')}>商品分类管理</Link>
+          </Menu.Item>
+          <Menu.Item key="操作日志" icon={<FileTextOutlined />}>
+            <Link to="log" onClick={()=>setnav('操作日志')}>操作日志</Link>
           </Menu.Item>
         </Menu>
       </Sider>

@@ -10,6 +10,7 @@ import Main from "../page/main";
 import AuthRoute from "../components/AuthRoute";
 import Product from "../page/main/childrenpage/product";
 import ProductKind from "../page/main/childrenpage/product_kind";
+import OperationLog from "../page/main/childrenpage/operation-log";
 // 创建router实例
 const router = createBrowserRouter([
     {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
             {
                 path: 'kind',
                 element: <ProductKind/>
+            },
+            {
+                path:'log',
+                element: <OperationLog/>
             }
         ]  
     }
